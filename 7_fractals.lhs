@@ -46,5 +46,26 @@ Define another function which takes a trajectory function and returns a float in
 > fuzzy :: (CF -> [CF]) -> Image Float
 > fuzzy f = \ z -> ratio (map fairlyClose ( firstFew ( f z ) ) )
 >   where
->       ratio zs = floatLen (filter id zs) / floatLen zs
+>       ratio zs = 1 - (floatLen (filter id zs) / floatLen zs)
 >       floatLen zs = (fromIntegral . length) zs
+
+
+Question 6:
+
+We can add psuedocolouring to our image by first defining a palette:
+
+> rgbPallete :: [RGB]
+> rgbPallete =
+>   [RGB i 0 15 | i <- [15,14..0]]  ++
+>   [RGB 0 i 15 | i <- [0..15]]     ++
+>   [RGB 0 15 i | i <- [15,14..0]]  ++
+>   [RGB i 15 0 | i <- [0..15]]     ++
+>   [RGB 15 i 0 | i <- [15,14..0]]
+
+We then define a function that will take a greyscale image and makes a psuedo-colour image from it:
+
+> ppmView :: [RGB] -> Grid Float -> Grid RGB
+> ppmView rgb gf = map ( map (\ x -> rgb !! (floor (x*80)) )) gf
+
+Example usage:
+ghci> ppmRender "colour_fractal.ppm" 15 ( ppmView rgbPallete ( sample ( grid 1000 1000 ((-2.25) :+ (-1.5)) (0.75:+1.5)) (fuzzy mandelbrot)))
